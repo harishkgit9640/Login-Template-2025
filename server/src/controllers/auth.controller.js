@@ -88,7 +88,7 @@ export const logout = (req, res) => {
 // @access  Private
 export const getMe = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user.id).select('-password');
 
     res.status(200).json({
       success: true,
@@ -108,11 +108,13 @@ const sendTokenResponse = (user, statusCode, res) => {
   const token = user.getSignedJwtToken();
 
   const options = {
-    expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
-    ),
+    expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     httpOnly: true
   };
+  // const options = {
+  //   expires: process.env.JWT_COOKIE_EXPIRE,
+  //   httpOnly: true
+  // };
 
   if (process.env.NODE_ENV === 'production') {
     options.secure = true;
@@ -122,6 +124,7 @@ const sendTokenResponse = (user, statusCode, res) => {
     .status(statusCode)
     .cookie('token', token, options)
     .json({
+      data: user,
       success: true,
       token
     });
