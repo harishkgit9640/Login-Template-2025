@@ -3,7 +3,8 @@ import {
   getUsers,
   getUser,
   updateUser,
-  deleteUser
+  deleteUser,
+  updateUserRole
 } from '../controllers/user.controller.js';
 import { protect, authorize } from '../middleware/auth.middleware.js';
 import multer from 'multer';
@@ -30,5 +31,8 @@ router.route('/:id')
   .get(authorize('admin'), getUser)
   .put(upload.single('profileImage'), updateUser)
   .delete(authorize('admin'), deleteUser);
+
+// Update user role
+router.patch('/:id/role', authorize('admin'), updateUserRole);
 
 export default router; 

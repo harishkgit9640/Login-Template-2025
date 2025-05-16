@@ -28,14 +28,28 @@ const login = async (userData) => {
 };
 
 // Logout user
-const logout = () => {
-  localStorage.removeItem('user');
+const logout = async () => {
+  try {
+    await axios.post(API_URL + '/logout');
+  } catch (error) {
+    console.error('Logout error:', error);
+  } finally {
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+  }
 };
 
 // Get user profile
 const getProfile = async () => {
-  const response = await axios.get(API_URL + '/me');
-  return response.data;
+  try {
+    const response = await axios.get(API_URL + '/me');
+    return response.data;
+  } catch (error) {
+    // If there's an error (like 401), clear the local storage
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    throw error;
+  }
 };
 
 const authService = {

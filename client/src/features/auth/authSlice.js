@@ -44,8 +44,16 @@ export const login = createAsyncThunk('auth/login', async (user, thunkAPI) => {
 });
 
 // Logout user
-export const logout = createAsyncThunk('auth/logout', async () => {
-  await authService.logout();
+export const logout = createAsyncThunk('auth/logout', async (_, thunkAPI) => {
+  try {
+    await authService.logout();
+  } catch (error) {
+    const message =
+      (error.response && error.response.data && error.response.data.message) ||
+      error.message ||
+      error.toString();
+    return thunkAPI.rejectWithValue(message);
+  }
 });
 
 // Get user profile
@@ -53,6 +61,10 @@ export const getProfile = createAsyncThunk(
   'auth/getProfile',
   async (_, thunkAPI) => {
     try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No token found');
+      }
       return await authService.getProfile();
     } catch (error) {
       const message =
@@ -107,6 +119,14 @@ export const authSlice = createSlice({
       })
       .addCase(logout.fulfilled, (state) => {
         state.user = null;
+        state.isSuccess = false;
+        state.isError = false;
+        state.message = '';
+      })
+      .addCase(logout.rejected, (state, action) => {
+        state.user = null;
+        state.isError = true;
+        state.message = action.payload;
       })
       .addCase(getProfile.pending, (state) => {
         state.isLoading = true;
@@ -120,6 +140,7 @@ export const authSlice = createSlice({
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload;
+        state.user = null;
       });
   },
 });
