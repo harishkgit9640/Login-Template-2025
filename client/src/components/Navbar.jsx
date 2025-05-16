@@ -1,5 +1,5 @@
 import { Fragment } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
@@ -11,14 +11,21 @@ function classNames(...classes) {
 
 export default function Navbar() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
+
+  const handleLogout = async () => {
+    await dispatch(logout());
+    navigate('/login');
+  };
+console.log(user?.data)
 
   const navigation = [
     { name: 'Dashboard', href: '/', current: true },
     { name: 'Profile', href: '/profile', current: false },
   ];
 
-  if (user?.role === 'admin') {
+  if (user?.data?.role === 'admin') {
     navigation.push({ name: 'Admin', href: '/admin', current: false });
   }
 
@@ -31,7 +38,7 @@ export default function Navbar() {
               <div className="flex">
                 <div className="flex flex-shrink-0 items-center">
                   <Link to="/" className="text-xl font-bold text-primary-600">
-                    MERN Auth
+                    LED FLEX
                   </Link>
                 </div>
                 <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
@@ -60,7 +67,7 @@ export default function Navbar() {
                         <span className="sr-only">Open user menu</span>
                         <img
                           className="h-8 w-8 rounded-full"
-                          src={user.profileImage || 'https://via.placeholder.com/32'}
+                          src={user.profileImage || 'https://via.placeholder.com/40'}
                           alt=""
                         />
                       </Menu.Button>
@@ -91,10 +98,10 @@ export default function Navbar() {
                         <Menu.Item>
                           {({ active }) => (
                             <button
-                              onClick={() => dispatch(logout())}
+                              onClick={handleLogout}
                               className={classNames(
                                 active ? 'bg-gray-100' : '',
-                                'block w-full px-4 py-2 text-left text-sm text-gray-700'
+                                'block w-full text-left px-4 py-2 text-sm text-gray-700'
                               )}
                             >
                               Sign out
@@ -153,22 +160,22 @@ export default function Navbar() {
                   </Disclosure.Button>
                 ))}
             </div>
-            {user ? (
+            {user?.data ? (
               <div className="border-t border-gray-200 pb-3 pt-4">
                 <div className="flex items-center px-4">
                   <div className="flex-shrink-0">
                     <img
                       className="h-10 w-10 rounded-full"
-                      src={user.profileImage || 'https://via.placeholder.com/40'}
+                      src={user?.data?.profileImage || 'https://via.placeholder.com/40'}
                       alt=""
                     />
                   </div>
                   <div className="ml-3">
                     <div className="text-base font-medium text-gray-800">
-                      {user.name}
+                      {user?.data?.name}
                     </div>
                     <div className="text-sm font-medium text-gray-500">
-                      {user.email}
+                      {user?.data?.email}
                     </div>
                   </div>
                 </div>
@@ -182,7 +189,7 @@ export default function Navbar() {
                   </Disclosure.Button>
                   <Disclosure.Button
                     as="button"
-                    onClick={() => dispatch(logout())}
+                    onClick={handleLogout}
                     className="block w-full px-4 py-2 text-left text-base font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-800"
                   >
                     Sign out
