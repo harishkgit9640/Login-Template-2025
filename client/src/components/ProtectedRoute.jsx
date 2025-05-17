@@ -18,8 +18,11 @@ const ProtectedRoute = ({ allowedRoles = [] }) => {
     return <Navigate to="/login" replace />;
   }
 
+  // Get the user role from the nested data structure
+  const userRole = user?.data?.role || user?.role;
+
   // If role is required and user doesn't have it, redirect to home
-  if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
+  if (allowedRoles.length > 0 && !allowedRoles.includes(userRole)) {
     return <Navigate to="/" replace />;
   }
 

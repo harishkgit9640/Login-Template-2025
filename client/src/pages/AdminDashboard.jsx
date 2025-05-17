@@ -1,21 +1,24 @@
 import { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
 import UserManagement from '../components/UserManagement';
+
+
 
 export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useSelector((state) => state.auth);
+  const userData = JSON.parse(localStorage.getItem('user'));
+  const accessToken = userData?.data?.token || userData?.token;
 
   const fetchUsers = async () => {
     try {
+      // http://localhost:5000/api/auth/register
       const response = await fetch('/api/users', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${accessToken}`
         }
       });
       const data = await response.json();
-      setUsers(data);
+      setUsers(data?.data);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -33,7 +36,7 @@ export default function AdminDashboard() {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${accessToken}`
         },
         body: JSON.stringify({ role: newRole })
       });
@@ -49,7 +52,7 @@ export default function AdminDashboard() {
         const response = await fetch(`/api/users/${userId}`, {
           method: 'DELETE',
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            'Authorization': `Bearer ${accessToken}`
           }
         });
 
@@ -78,9 +81,9 @@ export default function AdminDashboard() {
               Manage users and their permissions
             </p>
           </div>
-          
+
           <div className="px-4 py-5 sm:px-6">
-            <UserManagement onUserUpdate={fetchUsers} />
+            <UserManagement onUserUpdate={fetchUsers} accessToken={accessToken} />
           </div>
 
           <div className="border-t border-gray-200">

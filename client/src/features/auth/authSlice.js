@@ -4,6 +4,11 @@ import authService from './authService';
 // Get user from localStorage
 const user = JSON.parse(localStorage.getItem('user'));
 
+// Initialize auth token if user exists
+if (user?.token) {
+  authService.setAuthToken(user.token);
+}
+
 const initialState = {
   user: user ? user : null,
   isError: false,
@@ -12,12 +17,23 @@ const initialState = {
   message: '',
 };
 
+// Helper function to normalize user data structure
+const normalizeUserData = (data) => {
+  // If data is already in the correct format (has data property), return as is
+  if (data?.data) {
+    return data;
+  }
+  // Otherwise, wrap it in a data property
+  return { data: data };
+};
+
 // Register user
 export const register = createAsyncThunk(
   'auth/register',
   async (user, thunkAPI) => {
     try {
-      return await authService.register(user);
+      const response = await authService.register(user);
+      return normalizeUserData(response);
     } catch (error) {
       const message =
         (error.response &&
@@ -33,7 +49,8 @@ export const register = createAsyncThunk(
 // Login user
 export const login = createAsyncThunk('auth/login', async (user, thunkAPI) => {
   try {
-    return await authService.login(user);
+    const response = await authService.login(user);
+    return normalizeUserData(response);
   } catch (error) {
     const message =
       (error.response && error.response.data && error.response.data.message) ||
@@ -61,11 +78,8 @@ export const getProfile = createAsyncThunk(
   'auth/getProfile',
   async (_, thunkAPI) => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('No token found');
-      }
-      return await authService.getProfile();
+      const response = await authService.getProfile();
+      return normalizeUserData(response);
     } catch (error) {
       const message =
         (error.response && error.response.data && error.response.data.message) ||

@@ -18,7 +18,6 @@ export default function Navbar() {
     await dispatch(logout());
     navigate('/login');
   };
-console.log(user?.data)
 
   const navigation = [
     { name: 'Dashboard', href: '/', current: true },
@@ -67,7 +66,7 @@ console.log(user?.data)
                         <span className="sr-only">Open user menu</span>
                         <img
                           className="h-8 w-8 rounded-full"
-                          src={user.profileImage || 'https://via.placeholder.com/40'}
+                          src={user.profileImage || 'https://ui-avatars.com/api/?background=random'}
                           alt=""
                         />
                       </Menu.Button>
@@ -166,7 +165,7 @@ console.log(user?.data)
                   <div className="flex-shrink-0">
                     <img
                       className="h-10 w-10 rounded-full"
-                      src={user?.data?.profileImage || 'https://via.placeholder.com/40'}
+                      src={user?.data?.profileImage || 'https://ui-avatars.com/api/?background=random'}
                       alt=""
                     />
                   </div>

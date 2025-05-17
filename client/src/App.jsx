@@ -38,15 +38,15 @@ function App() {
       <main className="container mx-auto px-4 py-8">
         <Routes>
           {/* Public Routes */}
-          <Route 
-            path="/login" 
-            element={user ? <Navigate to="/" replace /> : <Login />} 
+          <Route
+            path="/login"
+            element={user ? <Navigate to="/" replace /> : <Login />}
           />
-          <Route 
-            path="/register" 
-            element={user ? <Navigate to="/" replace /> : <Register />} 
+          <Route
+            path="/register"
+            element={user ? <Navigate to="/" replace /> : <Register />}
           />
-          
+
           {/* Protected Routes */}
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<Dashboard />} />

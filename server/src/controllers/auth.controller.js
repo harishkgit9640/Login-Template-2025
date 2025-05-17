@@ -72,14 +72,23 @@ export const login = async (req, res) => {
 // @route   GET /api/auth/logout
 // @access  Private
 export const logout = (req, res) => {
-  res.cookie('token', 'none', {
-    expires: new Date(Date.now() + 10 * 1000),
-    httpOnly: true
-  });
+  let token = req.cookies.token;
+  // console.log('token', token);
+  if (token) {
+    res.cookie('token', 'none', {
+      expires: new Date(Date.now() + 10 * 1000),
+      httpOnly: true
+    });
+  } else {
+    res.status(400).json({
+      success: false,
+      data: "No token provided"
+    });
+  }
 
   res.status(200).json({
     success: true,
-    data: {}
+    data: "Logged out successfully"
   });
 };
 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export default function UserManagement({ onUserUpdate }) {
+export default function UserManagement({ onUserUpdate, accessToken }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -13,17 +13,17 @@ export default function UserManagement({ onUserUpdate }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const url = editingUser 
+      const url = editingUser
         ? `/api/users/${editingUser._id}`
-        : '/api/users';
-      
+        : '/api/auth/register';
+
       const method = editingUser ? 'PUT' : 'POST';
-      
+
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${accessToken}`
         },
         body: JSON.stringify(formData)
       });
@@ -45,7 +45,7 @@ export default function UserManagement({ onUserUpdate }) {
         const response = await fetch(`/api/users/${userId}`, {
           method: 'DELETE',
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            'Authorization': `Bearer ${accessToken}`
           }
         });
 
@@ -94,7 +94,7 @@ export default function UserManagement({ onUserUpdate }) {
                 <h3 className="text-lg font-medium text-gray-900 mb-4">
                   {editingUser ? 'Edit User' : 'Add New User'}
                 </h3>
-                
+
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Name</label>
