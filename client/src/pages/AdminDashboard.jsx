@@ -11,7 +11,6 @@ export default function AdminDashboard() {
 
   const fetchUsers = async () => {
     try {
-      // http://localhost:5000/api/auth/register
       const response = await fetch('/api/users', {
         headers: {
           'Authorization': `Bearer ${accessToken}`
@@ -83,7 +82,7 @@ export default function AdminDashboard() {
           </div>
 
           <div className="px-4 py-5 sm:px-6">
-            <UserManagement onUserUpdate={fetchUsers} accessToken={accessToken} />
+            <UserManagement onUserUpdate={fetchUsers} />
           </div>
 
           <div className="border-t border-gray-200">

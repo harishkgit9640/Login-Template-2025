@@ -1,9 +1,6 @@
 import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { createUser, deleteUser } from '../features/user/userSlice';
 
 export default function UserManagement({ onUserUpdate, accessToken }) {
-  const dispatch = useDispatch();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -13,15 +10,51 @@ export default function UserManagement({ onUserUpdate, accessToken }) {
   });
   const [editingUser, setEditingUser] = useState(null);
 
-  // Create user
   const handleSubmit = async (e) => {
     e.preventDefault();
-    dispatch(createUser(formData));
+    try {
+      const url = editingUser
+        ? `/api/users/${editingUser._id}`
+        : '/api/auth/register';
+
+      const method = editingUser ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`
+        },
+        body: JSON.stringify(formData)
+      });
+
+      if (response.ok) {
+        setIsModalOpen(false);
+        setFormData({ name: '', email: '', password: '', role: 'user' });
+        setEditingUser(null);
+        onUserUpdate(); // Refresh the user list
+      }
+    } catch (error) {
+      console.error('Error saving user:', error);
+    }
   };
 
   const handleDelete = async (userId) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
-      dispatch(deleteUser(userId));
+      try {
+        const response = await fetch(`/api/users/${userId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`
+          }
+        });
+
+        if (response.ok) {
+          onUserUpdate(); // Refresh the user list
+        }
+      } catch (error) {
+        console.error('Error deleting user:', error);
+      }
     }
   };
 
