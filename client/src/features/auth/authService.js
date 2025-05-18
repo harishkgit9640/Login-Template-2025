@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API_URL = 'http://localhost:5000/api/auth';
-
+const UPDATE_URL = 'http://localhost:5000/api/users';
 // Configure axios defaults
 axios.defaults.withCredentials = true;
 
@@ -72,11 +72,47 @@ const getProfile = async () => {
   }
 };
 
+// Update user profile
+const updateProfile = async (formData) => {
+  try {
+    const user = JSON.parse(localStorage.getItem('user'));
+    const userId = user?.data?._id || user?._id;
+
+    if (!userId) {
+      throw new Error('User ID not found');
+    }
+
+    const response = await axios.put(`${UPDATE_URL}/${userId}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    if (response.data) {
+      // Update local storage with new user data
+      const currentUser = JSON.parse(localStorage.getItem('user'));
+      const updatedUser = {
+        ...currentUser,
+        data: {
+          ...currentUser.data,
+          ...response.data.data,
+        },
+      };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+    }
+
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 const authService = {
   register,
   login,
   logout,
   getProfile,
+  updateProfile,
   setAuthToken,
 };
 

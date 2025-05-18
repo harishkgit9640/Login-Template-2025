@@ -1,5 +1,5 @@
 import User from '../models/user.model.js';
-import cloudinary from '../config/cloudinary.js';
+import uploadToCloudinary from '../utils/cloudinaryUpload.js';
 
 // @desc    Get all users
 // @route   GET /api/users
@@ -52,7 +52,6 @@ export const getUser = async (req, res) => {
 export const updateUser = async (req, res) => {
   try {
     let user = await User.findById(req.params.id);
-
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -70,26 +69,51 @@ export const updateUser = async (req, res) => {
 
     // Handle file upload if present
     if (req.file) {
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: 'mern-auth',
-        use_filename: true
-      });
-
-      req.body.profileImage = result.secure_url;
+      try {
+        const imageUrl = await uploadToCloudinary(req.file.path);
+        if (imageUrl) {
+          user.profileImage = imageUrl;
+        }
+      } catch (error) {
+        return res.status(400).json({
+          success: false,
+          message: 'Error uploading image: ' + error.message
+        });
+      }
     }
 
-    user = await User.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true
-    });
+    // Update basic info
+    if (req.body.name) user.name = req.body.name;
+    if (req.body.email) user.email = req.body.email;
+
+    // Handle password change if requested
+    if (req.body.currentPassword && req.body.newPassword) {
+      const isMatch = await user.comparePassword(req.body.currentPassword);
+      if (!isMatch) {
+        return res.status(400).json({
+          success: false,
+          message: 'Current password is incorrect'
+        });
+      }
+      user.password = req.body.newPassword;
+    }
+
+    // Save the updated user
+    await user.save();
+
+    // Return updated user (excluding password)
+    const updatedUser = await User.findById(user._id).select('-password');
 
     res.status(200).json({
       success: true,
-      data: user
+      data: updatedUser,
+      message: 'User updated successfully'
     });
   } catch (err) {
+    console.error('Update user error:', err); // Debug log
     res.status(400).json({
       success: false,
+      message: 'User not updated',
       error: err.message
     });
   }
@@ -163,5 +187,54 @@ export const deleteUser = async (req, res) => {
       success: false,
       error: err.message
     });
+  }
+};
+
+// Update user profile
+export const updateProfile = async (req, res) => {
+  try {
+    const { name, email, currentPassword, newPassword } = req.body;
+    const userId = req.params.id;
+
+    // Find user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Handle file upload if present
+    if (req.file) {
+      try {
+        const imageUrl = await uploadToCloudinary(req.file);
+        user.profileImage = imageUrl;
+      } catch (error) {
+        return res.status(400).json({ message: 'Error uploading image: ' + error.message });
+      }
+    }
+
+    // Update basic info
+    if (name) user.name = name;
+    if (email) user.email = email;
+
+    // Handle password change if requested
+    if (currentPassword && newPassword) {
+      const isMatch = await user.comparePassword(currentPassword);
+      if (!isMatch) {
+        return res.status(400).json({ message: 'Current password is incorrect' });
+      }
+      user.password = newPassword;
+    }
+
+    // Save changes
+    await user.save();
+
+    // Return updated user (excluding password)
+    const updatedUser = await User.findById(userId).select('-password');
+    res.json({
+      success: true,
+      data: updatedUser
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 }; 

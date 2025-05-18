@@ -7,18 +7,9 @@ import {
   updateUserRole
 } from '../controllers/user.controller.js';
 import { protect, authorize } from '../middleware/auth.middleware.js';
-import multer from 'multer';
+import { upload } from '../middleware/upload.js';
 
 const router = express.Router();
-
-// Configure multer for file upload
-const storage = multer.diskStorage({
-  filename: function (req, file, cb) {
-    cb(null, new Date().toISOString().replace(/:/g, '-') + file.originalname);
-  }
-});
-
-const upload = multer({ storage });
 
 // Protect all routes
 router.use(protect);
